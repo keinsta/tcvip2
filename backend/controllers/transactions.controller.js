@@ -863,7 +863,7 @@ exports.approvalDepositWithdrawal = async (req, res) => {
           }
         }
       } else if (transaction.type === "Withdrawal") {
-        user.totalBalance -= transaction.amount;
+        // user.totalBalance -= transaction.amount;
         user.totalWithdrawalsAmount += transaction.amount;
         user.totalWithdrawalsCounts += 1;
         notificationTitle = "Withdrawal Transaction Success";
@@ -874,6 +874,10 @@ exports.approvalDepositWithdrawal = async (req, res) => {
         transaction.amount
       } has been successfully processed.`;
     } else if (status === "Cancelled") {
+      if (transaction.type === "Withdrawal") {
+        user.totalBalance += transaction.amount;
+      }
+      await user.save();
       notificationTitle = "Transaction Cancelled";
       notificationMessage = `Your request for ${transaction.type.toLowerCase()} of ₹${
         transaction.amount

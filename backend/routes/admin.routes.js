@@ -3,6 +3,10 @@ const rateLimit = require("express-rate-limit");
 const UserChild = require("../models/UserChild");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
+const Commission = require("../models/Commission");
+const UserActivityNotification = require("../models/UserActivityNotification");
+
+const { v4: uuidv4 } = require("uuid");
 const {
   getUserProfile,
   getAllUsers,
@@ -34,6 +38,7 @@ const {
   authMiddleware,
 } = require("../middleware/authMiddleware");
 const parentChild = require("../routes/parentChild.routes");
+const ChatSession = require("../models/customer-support/ChatSession");
 
 const router = express.Router();
 
@@ -258,6 +263,52 @@ router.get("/get-agent-profile/:agentUID", async (req, res) => {
   }
 });
 
+router.post("/send-commission-to-agent", async (req, res) => {
+  const { userId, sendBy, type, amount, remarks } = req.body;
+
+  try {
+    // Verify both users exist
+    const user = await User.findById(userId);
+    const sender = await User.findById(sendBy);
+    if (!user || !sender) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User or sender not found" });
+    }
+
+    user.totalBalance += amount;
+    user.totalCommission += amount;
+    await user.save();
+
+    const transactionId = uuidv4(); // Generate unique transaction ID
+
+    const commission = new Commission({
+      userId,
+      sendBy,
+      type,
+      amount,
+      remarks,
+      transactionId,
+    });
+
+    await commission.save();
+
+    await UserActivityNotification.create({
+      user: userId,
+      category: "notification",
+      type: "commission",
+      title: type,
+      message: `Commission Salary of amount: ₹${amount} has been added.`,
+    });
+
+    res.status(201).json({ success: true, commission });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to send commission", error });
+  }
+});
+
 router.get(
   "/get-user-profile/:id",
   authMiddleware,
@@ -351,6 +402,20 @@ router.patch(
   adminMiddleware,
   acknowledgeFeedback
 );
+
+router.get("/chat-session/users", async (req, res) => {
+  const sessions = await ChatSession.find()
+    .populate("userId")
+    .sort({ createdAt: -1 });
+  const userMap = new Map();
+  sessions.forEach((session) => {
+    const user = session.userId;
+    if (!userMap.has(user._id.toString())) {
+      userMap.set(user._id.toString(), user);
+    }
+  });
+  res.json(Array.from(userMap.values()));
+});
 
 // router.get("/parent-to-child/:parentId", async (req, res) => {
 //   const { parentId } = req.params;

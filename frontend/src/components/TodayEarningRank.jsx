@@ -1,13 +1,20 @@
 import React from "react";
 import { Crown, Medal } from "lucide-react";
-
+import avatar1 from "../assets/images/avatar/1.png";
+import avatar2 from "../assets/images/avatar/2.png";
+import avatar3 from "../assets/images/avatar/3.png";
+import avatar4 from "../assets/images/avatar/4.png";
+import avatar5 from "../assets/images/avatar/5.png";
+import avatar6 from "../assets/images/avatar/6.png";
+import avatar7 from "../assets/images/avatar/7.png";
+import avatar8 from "../assets/images/avatar/8.png";
 const dummyData = [
   {
     id: 1,
     name: "John Doe",
     memberId: "Member-001",
     prize: "₹9000",
-    avatar: "https://i.pravatar.cc/50?img=1",
+    avatar: avatar1,
     badge: "https://picsum.photos/80/40",
   },
   {
@@ -15,7 +22,7 @@ const dummyData = [
     name: "Alice Smith",
     memberId: "Member-002",
     prize: "₹7000",
-    avatar: "https://i.pravatar.cc/50?img=2",
+    avatar: avatar2,
     badge: "https://picsum.photos/80/40",
   },
   {
@@ -23,7 +30,7 @@ const dummyData = [
     name: "Michael Johnson",
     memberId: "Member-003",
     prize: "₹5000",
-    avatar: "https://i.pravatar.cc/50?img=3",
+    avatar: avatar3,
     badge: "https://picsum.photos/80/40",
   },
   {
@@ -31,7 +38,7 @@ const dummyData = [
     name: "Sarah Williams",
     memberId: "Member-004",
     prize: "₹4000",
-    avatar: "https://i.pravatar.cc/50?img=4",
+    avatar: avatar4,
     badge: "https://picsum.photos/80/40",
   },
   {
@@ -39,7 +46,7 @@ const dummyData = [
     name: "David Brown",
     memberId: "Member-005",
     prize: "₹3000",
-    avatar: "https://i.pravatar.cc/50?img=5",
+    avatar: avatar5,
     badge: "https://picsum.photos/80/40",
   },
 ];

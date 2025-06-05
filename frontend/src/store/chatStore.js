@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
-const useAdminChatStore = create((set) => ({
-  selected: null,
+const useChatStore = create((set) => ({
+  sessionId: null,
   messages: [],
-  setSelected: (info) => set({ selected: info }),
+  setSessionId: (id) => set({ sessionId: id }),
   addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
   setMessages: (msgs) => set({ messages: msgs }),
 }));
 
-export default useAdminChatStore;
+export default useChatStore;

@@ -63,7 +63,7 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    loyaltyPoints: { type: Number, default: 0 },
+    exp: { type: Number, default: 0 },
     registerTimeIP: { type: String, default: null },
     downloadRewardClaimed: { type: Boolean, default: false }, // Track app reward claim
     downloadRewardClaimedAt: { type: Date },

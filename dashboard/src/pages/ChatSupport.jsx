@@ -1,101 +1,132 @@
 import { useEffect, useState } from "react";
-import useChatSupportStore from "../store/useChatSupportStore";
-import ChatMessage from "../components/ChatMessage";
-import ChatInput from "../components/ChatInput";
-import UserList from "../components/UserList";
-const socket = io(`${API_BASE_URL}/support/chatSupport`, {
+import { io } from "socket.io-client";
+import axios from "axios";
+import axiosInstance from "../config/axiosInstance";
+const API_BASE_URL = import.meta.env.VITE_API_URL.replace("/api/v1", "");
+const socket = io(`${API_BASE_URL}/admin`, {
   transports: ["websocket"],
   autoConnect: false,
 });
-export default function AdminDashboard() {
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userList, setUserList] = useState([]);
-  const { messages, setMessages, addMessage, resetUnseen } =
-    useChatSupportStore();
+
+export default function AdminApp() {
+  const [users, setUsers] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [content, setContent] = useState("");
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
-    socket.emit("adminJoin");
-
-    socket.on("userList", (list) => {
-      setUserList(list);
-    });
-
-    socket.on("newMessage", ({ userId, message }) => {
-      addMessage(userId, message);
-    });
-
-    return () => {
-      socket.off("userList");
-      socket.off("newMessage");
-    };
+    axiosInstance
+      .get("/admin/chat-session/users")
+      .then((res) => setUsers(res.data));
   }, []);
 
-  useEffect(() => {
-    if (!selectedUser) return;
-
-    socket.emit("adminSelectUser", selectedUser);
-
-    // Optionally fetch past messages
-    fetch(`http://localhost:4000/api/admin/chat/${selectedUser}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMessages(selectedUser, data.messages || []);
-        resetUnseen(selectedUser);
-      });
-  }, [selectedUser]);
-
-  const sendMessage = (text, fileUrl) => {
-    socket.emit("adminMessage", {
-      userId: selectedUser,
-      message: text,
-      fileUrl,
-    });
-  };
-
-  const handleDownload = async () => {
-    const res = await fetch(
-      `http://localhost:4000/api/admin/chat/${selectedUser}/download`
+  const loadMessages = async (userId) => {
+    const sessions = await axiosInstance.get(`/user/${userId}/sessions`);
+    if (!sessions.data.length) return;
+    const sessionId = sessions.data[0]._id;
+    setSelected({ sessionId, userId });
+    socket.emit("joinSession", sessionId);
+    const msgRes = await axiosInstance.get(
+      `/user/session/${sessionId}/messages`
     );
-    const data = await res.json();
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${selectedUser}_chat.json`;
-    link.click();
+    setMessages(msgRes.data);
   };
+
+  const sendMessage = async () => {
+    if (!content.trim() && !file) return;
+    let attachmentUrl = null;
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post("/user/upload", formData);
+      attachmentUrl = res.data.url;
+      setFile(null);
+    }
+    socket.emit("sendMessage", {
+      sessionId: selected.sessionId,
+      content,
+      attachment: attachmentUrl,
+    });
+    setContent("");
+  };
+
+  useEffect(() => {
+    socket.on("receiveMessage", (msg) => setMessages((prev) => [...prev, msg]));
+    socket.on("newMessage", ({ sessionId, message }) => {
+      if (selected?.sessionId === sessionId)
+        setMessages((prev) => [...prev, message]);
+    });
+    return () => {
+      socket.off("receiveMessage");
+      socket.off("newMessage");
+    };
+  }, [selected]);
 
   return (
     <div className="flex h-screen">
-      <UserList
-        users={userList}
-        selectedUser={selectedUser}
-        onSelect={setSelectedUser}
-      />
-
-      <div className="flex-1 p-4 flex flex-col">
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl font-bold">
-            Chat with {selectedUser || "..."}
-          </h1>
-          {selectedUser && (
-            <button
-              onClick={handleDownload}
-              className="bg-green-600 text-white px-3 py-1 rounded"
-            >
-              Download Chat
-            </button>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto border p-2 bg-gray-50">
-          {(messages[selectedUser] || []).map((msg, idx) => (
-            <ChatMessage key={idx} msg={msg} />
-          ))}
-        </div>
-
-        {selectedUser && <ChatInput onSend={sendMessage} />}
+      <div className="w-1/3 border-r overflow-y-auto p-4">
+        <h2 className="text-xl mb-4 font-bold">Users</h2>
+        {users.map((u) => (
+          <div
+            key={u._id}
+            className="mb-2 cursor-pointer"
+            onClick={() => loadMessages(u._id)}
+          >
+            <div className="p-2 bg-gray-700 rounded">{u.email}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex-1 p-4">
+        {selected ? (
+          <>
+            <div className="h-[80%] overflow-y-auto border p-3 mb-4">
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={`mb-2 ${
+                    m.sender === "admin" ? "text-right" : "text-left"
+                  }`}
+                >
+                  <div className="inline-block bg-blue-100 px-3 py-1 rounded">
+                    {m.content && <p>{m.content}</p>}
+                    {m.attachment && (
+                      <a
+                        href={m.attachment}
+                        target="_blank"
+                        className="text-blue-500 underline"
+                      >
+                        Attachment
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <input
+                type="file"
+                onChange={(e) => setFile(e.target.files[0])}
+                className="border p-1"
+              />
+              <div className="flex gap-2">
+                <input
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="border flex-1 p-2 bg-transparent"
+                />
+                <button
+                  onClick={sendMessage}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="text-gray-500">Select a user to view messages</div>
+        )}
       </div>
     </div>
   );

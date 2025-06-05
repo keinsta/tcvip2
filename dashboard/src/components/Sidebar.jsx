@@ -14,6 +14,7 @@ import {
   FaDollarSign,
   FaFileInvoice,
   FaCommentAlt,
+  FaGavel,
 } from "react-icons/fa";
 import { ArrowDownCircle, Download } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -49,6 +50,16 @@ const Sidebar = () => {
         },
         { label: "All Users", icon: <FaUsers size={16} />, path: "/users" },
         {
+          label: "Commission",
+          icon: <FaDollarSign size={16} />,
+          path: "/agent-commission",
+        },
+        {
+          label: "Punishments",
+          icon: <FaGavel size={16} />,
+          path: "/punishment",
+        },
+        {
           label: "User Feedbacks",
           icon: <FaCommentAlt size={16} />,
           path: "/users-feedbacks",
@@ -83,21 +94,6 @@ const Sidebar = () => {
       ],
     },
     {
-      label: "Games",
-      icon: <FaGamepad />,
-      path: "/games",
-    },
-    {
-      label: "Notifications",
-      icon: <FaBell />,
-      path: "/notifications",
-    },
-    {
-      label: "Revenue",
-      icon: <FaDollarSign />,
-      path: "/revenue",
-    },
-    {
       label: "Payment Methods",
       icon: <FaCog />,
       // path: "/settings",
@@ -113,6 +109,21 @@ const Sidebar = () => {
           path: "/withdrawal-payment-methods",
         },
       ],
+    },
+    {
+      label: "Games",
+      icon: <FaGamepad />,
+      path: "/games",
+    },
+    // {
+    //   label: "Notifications",
+    //   icon: <FaBell />,
+    //   path: "/notifications",
+    // },
+    {
+      label: "Revenue",
+      icon: <FaDollarSign />,
+      path: "/revenue",
     },
     // {
     //   label: "Settings",

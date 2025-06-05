@@ -249,7 +249,7 @@ const UserProfile = () => {
                       </span>
                       <span>
                         USDT:{" "}
-                        {userData?.withdrawalMethodSet?.bankCard ? (
+                        {userData?.withdrawalMethodSet?.usdt ? (
                           <span className="text-green-500">Active</span>
                         ) : (
                           <span className="text-red-500">Inactive</span>
@@ -257,7 +257,7 @@ const UserProfile = () => {
                       </span>
                       <span>
                         Wallet:{" "}
-                        {userData?.withdrawalMethodSet?.bankCard ? (
+                        {userData?.withdrawalMethodSet?.wallet ? (
                           <span className="text-green-500">Active</span>
                         ) : (
                           <span className="text-red-500">Inactive</span>
@@ -381,6 +381,21 @@ const UserProfile = () => {
               </div>
             ) : (
               <p className="text-gray-500">No login data available</p>
+            )}
+            {!loading && userData?.registerTimeIP && (
+              <div className="mt-4 text-sm font-medium p-3 rounded-md border bg-muted/30">
+                <p>
+                  <span className="font-semibold">Unique IPs Used:</span>{" "}
+                  {
+                    new Set([
+                      userData.registerTimeIP,
+                      ...userData.loginHistory
+                        ?.slice(0, 3)
+                        .map((login) => login.ip),
+                    ]).size
+                  }
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -591,6 +606,25 @@ const UserProfile = () => {
               className="border p-2 w-full rounded mb-2 bg-transparent"
             />
 
+            {/* Name (Editable) */}
+            <label className="block text-sm font-medium">Role</label>
+            <input
+              type="text"
+              name="role"
+              value={updateUserData.role || ""}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded mb-2 bg-transparent"
+            />
+
+            <label className="block text-sm font-medium">Password</label>
+            <input
+              type="text"
+              name="password"
+              value={updateUserData.password || ""}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded mb-2 bg-transparent"
+            />
+
             {/* Status (Editable) */}
             {/* <label className="block text-sm font-medium">Status</label>
             <select
@@ -624,6 +658,81 @@ const UserProfile = () => {
                 {updateUserData.withdrawalPasswordStatus
                   ? "Unset Status"
                   : "Set Status"}
+              </span>
+            </div>
+
+            <label className="block text-sm font-medium">
+              Withdrawal Method Details
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="bankCard"
+                checked={updateUserData.withdrawalMethodSet.bankCard || false}
+                onChange={(e) =>
+                  setUpdateUserData((prev) => ({
+                    ...prev,
+                    // withdrawalMethodSet.bankCard: e.target.checked,
+                    withdrawalMethodSet: {
+                      ...prev.withdrawalMethodSet,
+                      bankCard: e.target.checked,
+                    },
+                  }))
+                }
+                className="w-5 h-5"
+              />
+              <span className="text-white">
+                {updateUserData.withdrawalMethodSet.bankCard
+                  ? "Unset Bank Details"
+                  : "Set Bank Details"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="usdt"
+                checked={updateUserData.withdrawalMethodSet.usdt || false}
+                onChange={(e) =>
+                  setUpdateUserData((prev) => ({
+                    ...prev,
+                    // withdrawalMethodSet.bankCard: e.target.checked,
+                    withdrawalMethodSet: {
+                      ...prev.withdrawalMethodSet,
+                      usdt: e.target.checked,
+                    },
+                  }))
+                }
+                className="w-5 h-5"
+              />
+              <span className="text-white">
+                {updateUserData.withdrawalMethodSet.usdt
+                  ? "Unset USDT Details"
+                  : "Set USDT Details"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="wallet"
+                checked={updateUserData.withdrawalMethodSet.wallet || false}
+                onChange={(e) =>
+                  setUpdateUserData((prev) => ({
+                    ...prev,
+                    // withdrawalMethodSet.bankCard: e.target.checked,
+                    withdrawalMethodSet: {
+                      ...prev.withdrawalMethodSet,
+                      wallet: e.target.checked,
+                    },
+                  }))
+                }
+                className="w-5 h-5"
+              />
+              <span className="text-white">
+                {updateUserData.withdrawalMethodSet.wallet
+                  ? "Unset Wallet Details"
+                  : "Set Wallet Details"}
               </span>
             </div>
 

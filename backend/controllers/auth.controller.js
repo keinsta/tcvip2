@@ -194,7 +194,7 @@ exports.login = async (req, res) => {
     const [isMatch, token] = await Promise.all([
       bcrypt.compare(password, user.password),
       jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
+        expiresIn: "1h",
       }),
     ]);
 
@@ -252,8 +252,15 @@ exports.getAllUsers = async (req, res) => {
 
     // Search & Filters
     const query = {};
+    // if (search) {
+    //   query.email = new RegExp(search, "i"); // Case-insensitive search by email
+    // }
     if (search) {
-      query.email = new RegExp(search, "i"); // Case-insensitive search by email
+      query.$or = [
+        { email: new RegExp(search, "i") },
+        { uid: new RegExp(search, "i") },
+        { phone: new RegExp(search, "i") },
+      ];
     }
     if (status) {
       query.status = status;
@@ -274,8 +281,8 @@ exports.getAllUsers = async (req, res) => {
     res.json({
       success: true,
       message: "All User fetched successfully",
-      totalUsers,
-      totalPages: Math.ceil(totalUsers / limit),
+      totalUsers: totalUsers || 0,
+      totalPages: Math.ceil(totalUsers / limit) || 1,
       currentPage: page,
       users,
     });
@@ -356,6 +363,12 @@ exports.updateUserProfile = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
+    }
+
+    // If password is being updated, hash it
+    if (selectedUser.password) {
+      const salt = await bcrypt.genSalt(10);
+      selectedUser.password = await bcrypt.hash(selectedUser.password, salt);
     }
 
     // console.log(user, "ab", selectedUser);

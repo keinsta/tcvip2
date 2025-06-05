@@ -14,6 +14,7 @@ const UserActivityNotificationSchema = new mongoose.Schema(
         "login",
         "register",
         "transaction",
+        "commission",
         "game",
         "security",
         "general",

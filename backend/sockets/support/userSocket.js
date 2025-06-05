@@ -1,25 +1,22 @@
 const ChatSupport = require("../../models/customer-support/ChatSession");
+const Message = require("../../models/customer-support/Message");
 
-module.exports = (io, socket) => {
-  socket.on("userMessage", async ({ userId, message, fileUrl }) => {
-    const chat = await ChatSupport.findOneAndUpdate(
-      { userId },
-      {
-        $push: {
-          messages: {
-            sender: "user",
-            message,
-            fileUrl,
-            timestamp: new Date(),
-          },
-        },
-      },
-      { upsert: true, new: true }
-    );
+function userSocket(io) {
+  io.of("/user").on("connection", (socket) => {
+    socket.on("joinSession", (sessionId) => socket.join(sessionId));
+    console.log("Session start", sessionId);
 
-    io.emit("newMessage", {
-      userId,
-      message: chat.messages.at(-1),
+    socket.on("sendMessage", async ({ sessionId, content, fileUrl }) => {
+      const msg = await Message.create({
+        chatSessionId: sessionId,
+        sender: "user",
+        content,
+        fileUrl,
+      });
+      io.of("/user").to(sessionId).emit("receiveMessage", msg);
+      io.of("/admin").emit("newMessage", { sessionId, message: msg });
     });
   });
-};
+}
+
+module.exports = userSocket;

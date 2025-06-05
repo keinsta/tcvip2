@@ -64,7 +64,7 @@ const withdrawalOptions = [
 
 const Withdraw = () => {
   const navigate = useNavigate();
-  const { user, fetchUser } = useAuthStore();
+  const { user, userId, fetchUser } = useAuthStore();
   const userBalance = user?.totalBalance;
   const usdtPriceInINR = useUSDTPriceStore((state) => state.usdtPriceInINR);
   const withdrawalMethodSet = user?.withdrawalMethodSet;
@@ -85,6 +85,19 @@ const Withdraw = () => {
     (option) => option.name === selectedMethod
   );
 
+  const updateUserBalance = async (amount, userId) => {
+    try {
+      const response = await axiosInstance.post(
+        "/transaction/update-user-balance",
+        { amount, userId }
+      );
+
+      fetchUser();
+    } catch (error) {
+      toast.error("Error in updating User Balance");
+    }
+  };
+
   const handleBankWithdrawal = async () => {
     try {
       // First API call: Validate withdrawal password
@@ -95,7 +108,7 @@ const Withdraw = () => {
         }
       );
 
-      console.log(validateResponse.data.message);
+      // console.log(validateResponse.data.message);
       if (!validateResponse.data.success) {
         toast.error("Withdrawal Password validation failed!");
         return;
@@ -111,9 +124,12 @@ const Withdraw = () => {
         }
       );
 
-      toast.success(withdrawResponse.data.message);
-      setWithdrawalAmount("");
-      setWithdrawalPassword("");
+      if (withdrawResponse) {
+        updateUserBalance(-withdrawalAmount, userId);
+        toast.success(withdrawResponse.data.message);
+        setWithdrawalAmount("");
+        setWithdrawalPassword("");
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
       setWithdrawalAmount("");
@@ -130,7 +146,7 @@ const Withdraw = () => {
         }
       );
 
-      console.log(validateResponse.data.message);
+      // console.log(validateResponse.data.message);
       if (!validateResponse.data.success) {
         toast.error("Withdrawal Password validation failed!");
         return;
@@ -140,15 +156,20 @@ const Withdraw = () => {
       const withdrawResponse = await axiosInstance.post(
         "/transaction/withdraw",
         {
-          amount: withdrawalAmount,
+          amount: usdtPriceInINR * withdrawalAmount,
           method: "USDT",
           methodDetails: usdtDetails,
         }
       );
-
-      toast.success(withdrawResponse.data.message);
-      setWithdrawalAmount("");
-      setWithdrawalPassword("");
+      if (withdrawResponse) {
+        updateUserBalance(-(usdtPriceInINR * withdrawalAmount), userId);
+        toast.success(withdrawResponse.data.message);
+        setWithdrawalAmount("");
+        setWithdrawalPassword("");
+      }
+      // toast.success(withdrawResponse.data.message);
+      // setWithdrawalAmount("");
+      // setWithdrawalPassword("");
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
       setWithdrawalAmount("");
@@ -165,7 +186,7 @@ const Withdraw = () => {
         }
       );
 
-      console.log(validateResponse.data.message);
+      // console.log(validateResponse.data.message);
       if (!validateResponse.data.success) {
         toast.error("Withdrawal Password validation failed!");
         return;
@@ -180,10 +201,12 @@ const Withdraw = () => {
           methodDetails: walletDetails,
         }
       );
-
-      toast.success(withdrawResponse.data.message);
-      setWithdrawalAmount("");
-      setWithdrawalPassword("");
+      if (withdrawResponse) {
+        updateUserBalance(-withdrawalAmount, userId);
+        toast.success(withdrawResponse.data.message);
+        setWithdrawalAmount("");
+        setWithdrawalPassword("");
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
       setWithdrawalAmount("");
@@ -294,7 +317,11 @@ const Withdraw = () => {
               value={withdrawalAmount}
               onChange={(e) => setWithdrawalAmount(e.target.value)}
               className="w-full p-3 pl-10 text-white placeholder-gray-300 rounded-md bg-app-bg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300 no-spinner"
-              placeholder="Please enter withdrawal amount"
+              placeholder={
+                selectedMethod === "USDT"
+                  ? "Please enter withdrawal USDT"
+                  : "Please enter withdrawal Amount"
+              }
               type="number"
             />
           </div>

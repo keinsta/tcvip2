@@ -71,8 +71,15 @@ const UsersList = () => {
 
   const LIMIT = 15; // Users per page
 
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, [page, search, sortBy, order, status]);
   useEffect(() => {
-    fetchUsers();
+    const delayDebounce = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
   }, [page, search, sortBy, order, status]);
 
   // Separate admins and regular users
@@ -120,7 +127,7 @@ const UsersList = () => {
                 </td>
 
                 <td className="border p-2">{user.nickName || "N/A"}</td>
-                <td className="border p-2">{user.email}</td>
+                <td className="border p-2">{user.email || user.phone}</td>
                 <td className="border p-2">₹{user.totalBalance}</td>
                 <td className="border p-2">
                   <span className="flex justify-center items-center gap-1">
@@ -178,7 +185,7 @@ const UsersList = () => {
         <div className="mb-4 flex flex-wrap gap-3">
           <input
             type="text"
-            placeholder="Search by email..."
+            placeholder="Search by uid | email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border p-2 rounded bg-transparent"

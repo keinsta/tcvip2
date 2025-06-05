@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
 import Users from "./pages/Users";
 import Agents from "./pages/Agents";
+import AgentCommission from "./pages/AgentCommission";
+import Punishments from "./pages/Punishments";
 // import ParentToChildTree from "./pages/ParentToChildTree";
 import Profile from "./pages/Profile";
 import Games from "./pages/Games";
@@ -24,6 +26,7 @@ import Revenue from "./pages/Revenue";
 import DepositPaymentMethods from "./pages/payment-methods/Deposit";
 import WithdrawalPaymentMethods from "./pages/payment-methods/Withdraw";
 import Settings from "./pages/Settings";
+import ChatSupport from "./pages/ChatSupport";
 
 import { Toaster } from "react-hot-toast";
 import UserProfile from "./pages/UserProfile";
@@ -51,6 +54,9 @@ function Layout() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/users" element={<Users />} />
             <Route path="/agent-panel" element={<Agents />} />
+            <Route path="/agent-commission" element={<AgentCommission />} />
+            <Route path="/punishment" element={<Punishments />} />
+            <Route path="/chat-support" element={<ChatSupport />} />
             {/* <Route
               path="/parent-to-child-traverse"
               element={<ParentToChildTree />}

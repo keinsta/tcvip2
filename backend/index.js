@@ -20,6 +20,9 @@ const {
   configureFiveDSockets,
 } = require("./controllers/games/fiveD.controller");
 
+const adminSocket = require("./sockets/support/adminSocket");
+const userSocket = require("./sockets/support/userSocket");
+
 dotenv.config();
 // console.log(
 //   "🕒 Server timezone:",
@@ -79,11 +82,13 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", require("./routes/authUser.routes"));
 app.use("/api/v1/admin", require("./routes/admin.routes"));
+app.use("/api/v1/user", require("./routes/user.routes"));
 app.use("/api/v1", require("./routes/userActivities.routes"));
 app.use("/api/v1/rewards", require("./routes/rewards.routes"));
 app.use("/api/v1/feedbacks", require("./routes/feedbacks.routes"));
 app.use("/api/v1/transaction", require("./routes/transactions.routes"));
 app.use("/api/v1/finance", require("./routes/userFinance.routes"));
+app.use("/api/v1/punishment", require("./routes/punishment.routes"));
 app.use(
   "/api/v1/payment-methods/deposit",
   require("./routes/depositPaymentMethod.routes")
@@ -108,9 +113,9 @@ configureCarRaceSockets(io);
 configureK3Sockets(io);
 configureFiveDSockets(io);
 
-// support
-app.use("/api/v1/support", require("./routes/chatSupport.routes"));
-require("./sockets/support/support")(io);
+// support socket
+adminSocket(io);
+userSocket(io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () =>

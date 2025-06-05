@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import avatar7 from "../../assets/images/avatar/7.png";
+import avatar4 from "../../assets/images/avatar/4.png";
+import avatar8 from "../../assets/images/avatar/8.png";
 import Lottery_Racing from "../../assets/images/lottery/lotterycategory_Racing.png";
 import { Link } from "react-router-dom";
 
@@ -8,21 +11,21 @@ const dummyData = [
     id: 1,
     name: "John Doe",
     prize: "₹5000",
-    avatar: "https://i.pravatar.cc/100?img=1", // Working Avatar Image
+    avatar: avatar7, // Working Avatar Image
   },
 
   {
     id: 2,
     name: "Michael Johnson",
     prize: "₹9000",
-    avatar: "https://i.pravatar.cc/100?img=3", // Working Avatar Image
+    avatar: avatar4, // Working Avatar Image
   },
 
   {
     id: 3,
     name: "Alice Smith",
     prize: "₹7000",
-    avatar: "https://i.pravatar.cc/100?img=2", // Working Avatar Image
+    avatar: avatar8, // Working Avatar Image
   },
 ];
 
